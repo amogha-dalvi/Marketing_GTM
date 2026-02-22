@@ -1,6 +1,7 @@
 ---
 name: creating-sales-enablement
 description: Use when sales reps lack deal-stage-specific content, when the founder's sales knowledge lives in their head instead of a system, when win rates are declining or sales cycles are lengthening, when no buying group content map exists, or when reps spend significant time creating content that should already exist. Use when sales and marketing lack shared definitions and feedback loops.
+user-invocable: true
 metadata:
   version: 1.0.0
 ---

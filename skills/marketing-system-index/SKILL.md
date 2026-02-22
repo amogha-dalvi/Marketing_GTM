@@ -1,6 +1,7 @@
 ---
 name: marketing-system-index
 description: Use when starting any marketing work for a SaaS business at 1M-5M ARR, when needing to find the right marketing skill, or when planning which marketing skills to execute and in what order.
+user-invocable: true
 metadata:
   version: 1.0.0
 ---

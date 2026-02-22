@@ -1,6 +1,7 @@
 ---
 name: executing-workflow
 description: Use when the user wants to execute a marketing skill workflow end-to-end. Triggers on "run the workflow", "execute reducing-cac", "run the CAC optimizer", or any request to execute a skill with a workflow-spec.yaml. This skill orchestrates multi-phase workflows with data connections, checkpoints, and structured outputs.
+user-invocable: true
 metadata:
   version: 1.0.0
 ---

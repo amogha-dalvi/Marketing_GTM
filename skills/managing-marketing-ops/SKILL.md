@@ -1,6 +1,7 @@
 ---
 name: managing-marketing-ops
 description: Use when the CRM is unreliable or inconsistently used, when lead routing is manual and slow, when marketing tools are disconnected or underutilized, when there are no documented SOPs for repeatable marketing processes, when marketing and sales lack shared definitions and handoff SLAs, or when data quality is degrading. Use when operational infrastructure is blocking execution of other marketing skills.
+user-invocable: true
 metadata:
   version: 1.0.0
 ---

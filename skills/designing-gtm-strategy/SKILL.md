@@ -1,6 +1,7 @@
 ---
 name: designing-gtm-strategy
 description: Use when the user needs to translate foundational marketing insights into an operational growth plan, select a GTM motion, prioritize channels, or create a 90-day execution plan. Use when marketing efforts feel like disconnected tactics without a coherent system connecting them to revenue targets.
+user-invocable: true
 metadata:
   version: 1.0.0
 ---

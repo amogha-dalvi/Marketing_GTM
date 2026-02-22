@@ -1,6 +1,7 @@
 ---
 name: building-positioning-messaging
 description: Use when messaging is inconsistent across sales and marketing, homepage conversion is low, buyers cannot articulate what makes you different, or positioning was never formally defined. Use when entering a new category, responding to competitive repositioning, launching a major product, or when customer research reveals a gap between how customers describe you and how you describe yourself.
+user-invocable: true
 metadata:
   version: 1.0.0
 ---

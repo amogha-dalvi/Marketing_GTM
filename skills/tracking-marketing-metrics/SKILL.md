@@ -1,6 +1,7 @@
 ---
 name: tracking-marketing-metrics
 description: Use when marketing lacks a metrics hierarchy connecting activity to business outcomes, when attribution is last-click or nonexistent, when marketing and sales report different numbers, when dashboards are ignored or full of vanity metrics, or when leading indicators are not tracked. Use when decisions are made on gut feel instead of data.
+user-invocable: true
 metadata:
   version: 1.0.0
 ---

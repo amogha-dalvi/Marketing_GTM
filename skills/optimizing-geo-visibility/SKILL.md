@@ -1,6 +1,7 @@
 ---
 name: optimizing-geo-visibility
 description: Use when the brand is invisible in AI search engines like ChatGPT, Perplexity, or Gemini, when competitors are cited in AI responses but your product is not, when AI models describe your product inaccurately, or when entering a new category where AI recommendations influence buyer decisions. Use when no AI visibility monitoring exists.
+user-invocable: true
 metadata:
   version: 1.0.0
 ---

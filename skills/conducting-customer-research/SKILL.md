@@ -1,6 +1,7 @@
 ---
 name: conducting-customer-research
 description: Use when starting any marketing initiative, entering a new market, refreshing ICP, or when downstream marketing decisions lack customer evidence. Use when messaging isn't resonating, churn patterns are unclear, or positioning feels like guesswork. Foundational skill that feeds all other marketing skills.
+user-invocable: true
 metadata:
   version: 1.0.0
 ---

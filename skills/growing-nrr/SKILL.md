@@ -1,6 +1,7 @@
 ---
 name: growing-nrr
 description: Use when net revenue retention is below 110%, when churn patterns are reactive instead of predictive, when expansion revenue lacks systematic triggers, when onboarding fails to reach activation milestones, or when customer health scoring does not exist. Use when customer base is large enough for patterns (50-500 accounts) but retention is managed manually.
+user-invocable: true
 metadata:
   version: 1.0.0
 ---
