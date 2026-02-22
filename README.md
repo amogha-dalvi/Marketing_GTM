@@ -129,23 +129,54 @@ Self-contained HTML tools for visual exploration and planning:
 | `playground/gtm-sprint-planner.html` | Sprint planning interface for marketing execution |
 | `marketing-budget-allocator.html` | Budget allocation modeling tool |
 
+## Install as Claude Code Plugin
+
+This project is a [Claude Code plugin](https://docs.anthropic.com/en/docs/claude-code). Once installed, all 18 skills are available as slash commands.
+
+### From GitHub
+
+```bash
+git clone https://github.com/amogha-dalvi/Marketing_GTM.git
+claude --plugin-dir ./Marketing_GTM
+```
+
+### From a local copy
+
+```bash
+claude --plugin-dir /path/to/Marketing_GTM
+```
+
+### Usage
+
+Once loaded, type `/gtm:` to see all available skills:
+
+```
+/gtm:marketing-system-index        # Find the right skill by business outcome
+/gtm:conducting-customer-research   # Start with customer research
+/gtm:reducing-cac                   # Optimize acquisition costs
+/gtm:accelerating-pipeline          # Speed up pipeline velocity
+/gtm:growing-nrr                    # Improve net revenue retention
+```
+
+All 18 skills are available under the `/gtm:` namespace.
+
 ## Getting Started
 
-**Prerequisites:** [Bun](https://bun.sh) for running CLI tools.
+**Prerequisites:** [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and [Bun](https://bun.sh) (for CLI tools).
 
 **If you're starting from scratch**, begin with Layer 0:
 
-1. Run `conducting-customer-research` — everything downstream depends on real customer data
-2. Run `defining-icp-segmentation` — turns research into targeting
+1. `/gtm:conducting-customer-research` — everything downstream depends on real customer data
+2. `/gtm:defining-icp-segmentation` — turns research into targeting
 3. Move to Layer 1+ based on your most pressing business need
 
-**If you're optimizing existing marketing**, use `marketing-system-index` to find the right skill by business outcome:
+**If you're optimizing existing marketing**, use `/gtm:marketing-system-index` to find the right skill by business outcome:
 
-- CAC rising → `reducing-cac`
-- Pipeline flat → `accelerating-pipeline`
-- Churn increasing → `growing-nrr`
-- Win rates dropping → `creating-sales-enablement` + `gathering-competitive-intel`
-- Brand feels accidental → `developing-brand-strategy`
+- CAC rising → `/gtm:reducing-cac`
+- Pipeline flat → `/gtm:accelerating-pipeline`
+- Churn increasing → `/gtm:growing-nrr`
+- Win rates dropping → `/gtm:creating-sales-enablement` + `/gtm:gathering-competitive-intel`
+- Brand feels accidental → `/gtm:developing-brand-strategy`
 
 ## Design Principles
 
