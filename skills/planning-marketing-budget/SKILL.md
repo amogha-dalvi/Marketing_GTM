@@ -1,6 +1,8 @@
 ---
 name: planning-marketing-budget
 description: Use when the user needs to derive a marketing budget from revenue targets, plan headcount for a 1-3 person team, decide what to build vs. buy vs. automate, or allocate spend across channels with ROI expectations. Use when budget is based on gut feel rather than revenue math, or resource allocation feels arbitrary.
+metadata:
+  version: 1.0.0
 ---
 
 # Marketing Budget & Resource Allocation

@@ -1,6 +1,8 @@
 ---
 name: defining-icp-segmentation
 description: Use when targeting feels unfocused, CAC is too high, churn patterns suggest bad-fit customers, or the ICP lives only in the founder's head. Use when entering a new market, conversion rates are low, or sales wastes cycles on wrong-fit accounts. Use after customer research is complete and before any channel or campaign decisions.
+metadata:
+  version: 1.0.0
 ---
 
 # ICP Definition & Segmentation

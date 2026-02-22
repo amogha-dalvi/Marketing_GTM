@@ -1,6 +1,8 @@
 ---
 name: running-content-engine
 description: Use when the team needs a systematic content production workflow, when content output is ad hoc or inconsistent, when existing content lacks a distribution plan, when BOFU conversion content is missing, or when a single content person needs to maximize output with AI assistance. Use when content exists but has no measurement or repurposing system.
+metadata:
+  version: 1.0.0
 ---
 
 # Content Engine

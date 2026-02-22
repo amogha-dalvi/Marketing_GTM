@@ -1,6 +1,8 @@
 ---
 name: accelerating-pipeline
 description: Use when pipeline velocity is flat or declining, win rates are below 20 percent, sales cycles are lengthening, deals are single-threaded, or lead routing is slow. Use when MQL volume is prioritized over pipeline quality, when marketing and sales define funnel stages differently, or when signal-based engagement has not replaced linear nurture drips.
+metadata:
+  version: 1.0.0
 ---
 
 # Pipeline Accelerator

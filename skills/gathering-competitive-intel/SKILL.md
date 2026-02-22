@@ -1,6 +1,8 @@
 ---
 name: gathering-competitive-intel
 description: Use when sales reps lack current competitive intel, win rates against specific competitors are declining, new competitors enter the market, or competitive objections are unaddressed. Use when launching comparison content, preparing battlecards, or when competitor pricing, features, or positioning have shifted. Use after customer research and ICP definition are complete.
+metadata:
+  version: 1.0.0
 ---
 
 # Competitive Intelligence

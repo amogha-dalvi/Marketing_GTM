@@ -1,6 +1,8 @@
 ---
 name: developing-brand-strategy
 description: Use when the user needs to build a strategic brand narrative, define thought leadership positioning, codify brand voice, or plan community and earned media presence. Use when brand is accidental rather than intentional, messaging could belong to any competitor, or AI search engines are shaping brand perception without input.
+metadata:
+  version: 1.0.0
 ---
 
 # Brand Strategy

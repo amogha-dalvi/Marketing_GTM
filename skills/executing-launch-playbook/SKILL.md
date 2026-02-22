@@ -1,6 +1,8 @@
 ---
 name: executing-launch-playbook
 description: Use when launching a new product, feature, or market entry and needing a structured execution plan. Use when launches lack cross-functional coordination, asset creation is bottlenecked, internal enablement is being skipped, or launch timelines are stretching beyond reasonable windows. Use when needing to classify launch tier and compress cycles with AI.
+metadata:
+  version: 1.0.0
 ---
 
 # Launch Playbook
