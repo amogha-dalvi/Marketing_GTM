@@ -1,0 +1,39 @@
+{
+  "name": "marketing-gtm",
+  "owner": {
+    "name": "Amogha"
+  },
+  "metadata": {
+    "description": "AI-native go-to-market system for 1-3 person SaaS marketing teams at $1M-5M ARR. 18 interconnected skills covering customer research, positioning, content, pipeline, CAC optimization, and more.",
+    "version": "1.0.0",
+    "repository": "https://github.com/amogha-dalvi/Marketing_GTM"
+  },
+  "plugins": [
+    {
+      "name": "gtm",
+      "description": "AI-native go-to-market system for 1-3 person SaaS marketing teams at $1M-5M ARR. 18 interconnected skills covering customer research, positioning, content, pipeline, CAC optimization, and more.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/accelerating-pipeline",
+        "./skills/building-positioning-messaging",
+        "./skills/conducting-customer-research",
+        "./skills/creating-sales-enablement",
+        "./skills/defining-icp-segmentation",
+        "./skills/designing-gtm-strategy",
+        "./skills/developing-brand-strategy",
+        "./skills/executing-launch-playbook",
+        "./skills/executing-workflow",
+        "./skills/gathering-competitive-intel",
+        "./skills/growing-nrr",
+        "./skills/managing-marketing-ops",
+        "./skills/marketing-system-index",
+        "./skills/optimizing-geo-visibility",
+        "./skills/planning-marketing-budget",
+        "./skills/reducing-cac",
+        "./skills/running-content-engine",
+        "./skills/tracking-marketing-metrics"
+      ]
+    }
+  ]
+}
