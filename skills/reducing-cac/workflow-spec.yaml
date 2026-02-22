@@ -1,0 +1,186 @@
+skill: reducing-cac
+version: 1.0.0
+
+setup:
+  ask_output_dir: true
+  ask_output_dir_prompt: "Where should I save the CAC analysis outputs?"
+
+upstream_dependencies:
+  - skill: defining-icp-segmentation
+    artifact: icp-tiers.md
+    required: false
+  - skill: designing-gtm-strategy
+    artifact: channel-performance.md
+    required: false
+  - skill: running-content-engine
+    artifact: content-attribution.md
+    required: false
+  - skill: optimizing-geo-visibility
+    artifact: geo-performance.md
+    required: false
+
+phases:
+  - id: cac-audit
+    name: "CAC Audit — Know Your Numbers"
+    duration: "Day 1-3"
+    checkpoint: after
+    data_sources:
+      - id: revenue-data
+        label: "Revenue and subscription data"
+        source: mcp:stripe
+        action: "Pull last 12 months MRR, new customers, churn"
+        fallback: cli:stripe
+        fallback_cmd: "bun tools/clis/stripe.ts subscriptions list --limit 100"
+        required: true
+      - id: traffic-data
+        label: "Traffic by source/medium"
+        source: mcp:ga4
+        action: "Pull last 12 months sessions by source/medium"
+        fallback: cli:ga4
+        fallback_cmd: "bun tools/clis/ga4.ts report --dimensions source,medium --metrics sessions,conversions --period 12m"
+        required: true
+      - id: crm-pipeline
+        label: "Pipeline and deal data by source"
+        source: mcp:hubspot
+        action: "Pull deals closed last 12 months with source attribution"
+        fallback: cli:hubspot
+        required: true
+      - id: ad-spend
+        label: "Ad spend by platform"
+        source: user:input
+        prompt: "What is your monthly ad spend by platform? (Google Ads, LinkedIn, Meta, etc.) Include last 6-12 months if possible."
+        required: true
+      - id: cost-data
+        label: "Headcount, tools, and agency costs"
+        source: user:input
+        prompt: "What are your marketing team costs? Include: headcount allocation, tool costs, agency/contractor fees."
+        required: true
+    steps:
+      - "Calculate three layers of CAC: channel-specific, blended, fully-loaded"
+      - "Build CAC audit table by channel using template"
+      - "Calculate LTV:CAC ratio by ICP segment (if ICP data available from upstream)"
+      - "Apply benchmarks: healthy >3:1, acceptable payback <18mo"
+      - "Assign verdict per channel: Scale / Hold / Kill"
+    output:
+      template: templates/reducing-cac/cac-audit.md
+      description: "Channel-by-channel CAC breakdown with benchmarks and verdicts"
+    context_ref: "workflow.md#phase-1"
+
+  - id: channel-scoring
+    name: "Channel Efficiency Scoring"
+    duration: "Day 4-5"
+    depends_on: [cac-audit]
+    checkpoint: after
+    data_sources:
+      - id: cac-audit-output
+        label: "CAC audit results"
+        source: phase:cac-audit
+        artifact: cac-audit.md
+    steps:
+      - "Score each channel 1-5 on 8 dimensions (CAC efficiency, LTV:CAC, scalability, speed, ICP precision, compounding, attribution clarity, saturation)"
+      - "Apply weights and calculate composite score out of 115"
+      - "Classify channels into Tier A (80+), B (60-79), C (40-59), D (<40)"
+      - "Generate investment recommendations per tier"
+    output:
+      template: templates/reducing-cac/channel-efficiency-scorecard.md
+      description: "Ranked channel list with composite scores and investment recommendations"
+    context_ref: "workflow.md#phase-2"
+
+  - id: cac-playbooks
+    name: "CAC Reduction Playbooks"
+    duration: "Day 6-10"
+    depends_on: [channel-scoring]
+    checkpoint: after
+    data_sources:
+      - id: channel-scores
+        source: phase:channel-scoring
+        artifact: channel-efficiency-scorecard.md
+    steps:
+      - "Build Zero-Cost Flywheel blueprint based on available channels"
+      - "Build CRO priority checklist mapped to current conversion rates"
+      - "Calculate ICP precision impact on CAC using segment data"
+      - "Build sales cycle reduction plan using pipeline velocity data"
+    output:
+      template: templates/reducing-cac/cac-reduction-playbooks.md
+      description: "Prioritized playbooks per channel with estimated CAC impact"
+    context_ref: "workflow.md#phase-3"
+
+  - id: paid-optimization
+    name: "Paid Media Optimization"
+    duration: "Day 11-15"
+    depends_on: [cac-playbooks]
+    checkpoint: after
+    skip_if: "No paid media channels in channel scorecard"
+    data_sources:
+      - id: google-ads
+        label: "Google Ads performance data"
+        source: mcp:google-ads
+        fallback: cli:google-ads
+        required: false
+      - id: meta-ads
+        label: "Meta Ads performance data"
+        source: cli:meta-ads
+        required: false
+      - id: linkedin-ads
+        label: "LinkedIn Ads performance data"
+        source: cli:linkedin-ads
+        required: false
+    steps:
+      - "Audit targeting against ICP firmographics"
+      - "Review creative against customer voice library (if available)"
+      - "Evaluate bidding strategy (CPA vs clicks)"
+      - "Build retargeting strategy by audience segment"
+      - "Determine scale vs organic investment decision"
+    output:
+      template: templates/reducing-cac/paid-media-optimization.md
+      description: "Optimized paid media plan with targeting, creative, bidding, and measurement"
+    context_ref: "workflow.md#phase-4"
+
+  - id: dying-tactics
+    name: "What's Dying — Stop Spending Here"
+    duration: "Day 11-15"
+    depends_on: [cac-playbooks]
+    parallel_with: [paid-optimization]
+    checkpoint: after
+    steps:
+      - "Evaluate each channel against 4-question kill framework"
+      - "Build stop-spending recommendations with reallocation targets"
+    output:
+      template: templates/reducing-cac/channels-to-kill.md
+      description: "Channels/tactics to stop or reduce with reallocation recommendations"
+    context_ref: "workflow.md#phase-5"
+
+  - id: unit-economics
+    name: "Unit Economics Modeling"
+    duration: "Day 16-18"
+    depends_on: [paid-optimization, dying-tactics]
+    checkpoint: after
+    data_sources:
+      - id: stripe-churn
+        source: mcp:stripe
+        action: "Pull churn rate, expansion revenue, ACV"
+        fallback: cli:stripe
+    steps:
+      - "Build unit economics calculator with current actuals"
+      - "Calculate LTV, LTV:CAC, CAC payback, marginal CAC"
+      - "Run scenario analysis: current, optimized, aggressive"
+      - "Build scaling decision matrix"
+    output:
+      template: templates/reducing-cac/unit-economics-model.md
+      description: "Complete model with actuals, scenarios, and scaling decisions"
+    context_ref: "workflow.md#phase-6"
+
+  - id: prioritization
+    name: "CAC Reduction Prioritization"
+    duration: "Day 19-20"
+    depends_on: [unit-economics]
+    checkpoint: after
+    steps:
+      - "Score all optimization initiatives on impact, effort, speed, confidence"
+      - "Rank and select top initiatives for 90-day roadmap"
+      - "Assign owners and success metrics per initiative"
+      - "Set 30-day review checkpoints"
+    output:
+      template: templates/reducing-cac/cac-reduction-roadmap.md
+      description: "Prioritized 90-day plan with owners, metrics, and decision checkpoints"
+    context_ref: "workflow.md#phase-7"
