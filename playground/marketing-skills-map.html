@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketing Skills Concept Map</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  #app {
+    position: absolute;
+    inset: 0;
+    display: flex;
+  }
+
+  /* Canvas fills all space left of sidebar */
+  #canvas-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+  }
+  #canvas-wrap canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: block;
+    cursor: grab;
+  }
+  #canvas-wrap canvas:active { cursor: grabbing; }
+
+  /* Sidebar: fixed width, never collapses */
+  #sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    background: #16213e;
+    border-left: 1px solid #0f3460;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid #0f3460;
+    font-size: 13px;
+    font-weight: 600;
+    color: #a78bfa;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-controls {
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .sidebar-section {
+    padding: 10px 16px;
+    border-bottom: 1px solid #0f3460;
+  }
+
+  .sidebar-section h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #7c8db5;
+    margin-bottom: 6px;
+  }
+
+  .filter-row {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    padding: 3px 8px;
+    border-radius: 10px;
+    border: 1px solid #0f3460;
+    background: transparent;
+    color: #a0aec0;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: #a78bfa; color: #a78bfa; }
+  .filter-btn.active { background: #a78bfa22; border-color: #a78bfa; color: #a78bfa; }
+
+  .action-row {
+    display: flex;
+    gap: 6px;
+  }
+
+  .action-btn {
+    flex: 1;
+    padding: 5px 0;
+    border: 1px solid #0f3460;
+    border-radius: 6px;
+    background: transparent;
+    color: #a0aec0;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .action-btn:hover { border-color: #a78bfa; color: #a78bfa; }
+
+  .preset-row {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .preset-btn {
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid #0f3460;
+    background: transparent;
+    color: #a0aec0;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .preset-btn:hover { border-color: #a78bfa; color: #a78bfa; }
+
+  #search-input {
+    width: 100%;
+    padding: 5px 10px;
+    background: #1a1a2e;
+    border: 1px solid #0f3460;
+    border-radius: 6px;
+    color: #e0e0e0;
+    font-size: 12px;
+    outline: none;
+  }
+  #search-input:focus { border-color: #a78bfa; }
+  #search-input::placeholder { color: #4a5568; }
+
+  /* Node list: scrolls independently, takes remaining space */
+  #node-list {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding: 4px 0;
+  }
+
+  .node-item {
+    display: flex;
+    align-items: center;
+    padding: 5px 16px;
+    cursor: pointer;
+    transition: background 0.1s;
+    gap: 8px;
+  }
+  .node-item:hover { background: #1a1a2e; }
+
+  .node-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .node-label {
+    font-size: 12px;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .knowledge-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+    border: none;
+    font-weight: 600;
+  }
+  .knowledge-badge.know { background: #10b98133; color: #34d399; }
+  .knowledge-badge.fuzzy { background: #f59e0b33; color: #fbbf24; }
+  .knowledge-badge.unknown { background: #ef444433; color: #f87171; }
+
+  #tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: #16213eee;
+    border: 1px solid #a78bfa55;
+    border-radius: 8px;
+    padding: 10px 14px;
+    max-width: 280px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #c4d0e4;
+    display: none;
+    z-index: 100;
+    box-shadow: 0 8px 24px #00000066;
+  }
+  #tooltip .tt-title { font-weight: 600; color: #e2e8f0; margin-bottom: 4px; }
+  #tooltip .tt-cat { font-size: 10px; color: #a78bfa; margin-bottom: 6px; }
+  #tooltip .tt-desc { color: #94a3b8; }
+  #tooltip .tt-connections { margin-top: 6px; font-size: 11px; color: #7c8db5; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #0f3460; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="canvas-wrap">
+    <canvas id="canvas"></canvas>
+  </div>
+  <div id="sidebar">
+    <div class="sidebar-header">Marketing Skills Map</div>
+    <div class="sidebar-controls">
+      <div class="sidebar-section">
+        <h3>Presets</h3>
+        <div class="preset-row">
+          <button class="preset-btn" onclick="preset('all')">All Skills</button>
+          <button class="preset-btn" onclick="preset('foundation')">Foundation</button>
+          <button class="preset-btn" onclick="preset('growth')">Growth Engine</button>
+          <button class="preset-btn" onclick="preset('revenue')">Revenue Ops</button>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <h3>Categories</h3>
+        <div class="filter-row" id="category-filters"></div>
+      </div>
+      <div class="sidebar-section">
+        <h3>Actions</h3>
+        <div class="action-row">
+          <button class="action-btn" onclick="autoLayout()">Auto Layout</button>
+          <button class="action-btn" onclick="resetKnowledge()">Reset Knowledge</button>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <h3>Nodes</h3>
+        <input id="search-input" placeholder="Search skills..." oninput="renderNodeList()">
+      </div>
+    </div>
+    <div id="node-list"></div>
+  </div>
+</div>
+<div id="tooltip"></div>
+
+<script>
+const CATEGORIES = {
+  'Foundation': '#a78bfa',
+  'Strategy': '#60a5fa',
+  'Content & Brand': '#f472b6',
+  'Pipeline & Sales': '#fb923c',
+  'Operations': '#34d399',
+  'Analytics': '#fbbf24',
+};
+
+const NODES = [
+  { id: 'customer-research', label: 'Customer Research', cat: 'Foundation', desc: 'Primary research to understand buyer pain, language, and decision criteria. Feeds every downstream skill.' },
+  { id: 'icp-segmentation', label: 'ICP & Segmentation', cat: 'Foundation', desc: 'Define ideal customer profile, firmographics, and micro-segments. Determines who to target.' },
+  { id: 'competitive-intel', label: 'Competitive Intel', cat: 'Foundation', desc: 'Systematic competitor monitoring — pricing, positioning, win/loss patterns, and battlecards.' },
+  { id: 'positioning-messaging', label: 'Positioning & Messaging', cat: 'Strategy', desc: 'Define differentiation, value props, and message hierarchy. The lens through which all content passes.' },
+  { id: 'gtm-strategy', label: 'GTM Strategy', cat: 'Strategy', desc: 'Select go-to-market motion, prioritize channels, and build a 90-day execution plan tied to revenue targets.' },
+  { id: 'brand-strategy', label: 'Brand Strategy', cat: 'Content & Brand', desc: 'Strategic brand narrative, thought leadership positioning, and brand voice codification.' },
+  { id: 'content-engine', label: 'Content Engine', cat: 'Content & Brand', desc: 'Systematic content production, distribution, repurposing, and measurement workflow.' },
+  { id: 'marketing-budget', label: 'Marketing Budget', cat: 'Strategy', desc: 'Revenue-derived budget, headcount planning, build vs. buy decisions, channel allocation with ROI targets.' },
+  { id: 'sales-enablement', label: 'Sales Enablement', cat: 'Pipeline & Sales', desc: 'Deal-stage content, buying group maps, objection handling, and sales-marketing feedback loops.' },
+  { id: 'pipeline-accel', label: 'Pipeline Acceleration', cat: 'Pipeline & Sales', desc: 'Pipeline velocity, win rates, signal-based engagement, multi-threading deals, and lead routing.' },
+  { id: 'reduce-cac', label: 'Reduce CAC', cat: 'Analytics', desc: 'Channel-level CAC tracking, LTV:CAC ratios, organic vs. paid rebalancing, efficiency optimization.' },
+  { id: 'grow-nrr', label: 'Grow NRR', cat: 'Analytics', desc: 'Net revenue retention — churn prediction, expansion triggers, onboarding milestones, health scoring.' },
+  { id: 'marketing-metrics', label: 'Marketing Metrics', cat: 'Analytics', desc: 'Metrics hierarchy from activity to revenue, attribution modeling, leading indicators, dashboard design.' },
+  { id: 'marketing-ops', label: 'Marketing Ops', cat: 'Operations', desc: 'CRM reliability, lead routing, tool integration, SOPs, data quality, and marketing-sales handoff SLAs.' },
+  { id: 'launch-playbook', label: 'Launch Playbook', cat: 'Operations', desc: 'Structured launch execution — tier classification, cross-functional coordination, asset creation, enablement.' },
+  { id: 'geo-visibility', label: 'AI/GEO Visibility', cat: 'Content & Brand', desc: 'Brand presence in AI search engines (ChatGPT, Perplexity, Gemini). AI recommendation optimization.' },
+];
+
+const EDGES = [
+  { from: 'customer-research', to: 'icp-segmentation', label: 'feeds' },
+  { from: 'customer-research', to: 'positioning-messaging', label: 'informs' },
+  { from: 'customer-research', to: 'competitive-intel', label: 'enables' },
+  { from: 'customer-research', to: 'brand-strategy', label: 'grounds' },
+  { from: 'icp-segmentation', to: 'gtm-strategy', label: 'targets' },
+  { from: 'icp-segmentation', to: 'content-engine', label: 'focuses' },
+  { from: 'icp-segmentation', to: 'sales-enablement', label: 'defines audience' },
+  { from: 'icp-segmentation', to: 'reduce-cac', label: 'improves fit' },
+  { from: 'competitive-intel', to: 'positioning-messaging', label: 'sharpens' },
+  { from: 'competitive-intel', to: 'sales-enablement', label: 'arms' },
+  { from: 'positioning-messaging', to: 'content-engine', label: 'guides' },
+  { from: 'positioning-messaging', to: 'brand-strategy', label: 'anchors' },
+  { from: 'positioning-messaging', to: 'sales-enablement', label: 'aligns' },
+  { from: 'positioning-messaging', to: 'geo-visibility', label: 'shapes' },
+  { from: 'positioning-messaging', to: 'launch-playbook', label: 'frames' },
+  { from: 'gtm-strategy', to: 'marketing-budget', label: 'drives' },
+  { from: 'gtm-strategy', to: 'pipeline-accel', label: 'selects channels' },
+  { from: 'gtm-strategy', to: 'content-engine', label: 'prioritizes' },
+  { from: 'gtm-strategy', to: 'marketing-ops', label: 'requires' },
+  { from: 'brand-strategy', to: 'content-engine', label: 'voices' },
+  { from: 'brand-strategy', to: 'geo-visibility', label: 'defines presence' },
+  { from: 'content-engine', to: 'pipeline-accel', label: 'fuels' },
+  { from: 'content-engine', to: 'geo-visibility', label: 'publishes to' },
+  { from: 'content-engine', to: 'sales-enablement', label: 'produces for' },
+  { from: 'marketing-budget', to: 'reduce-cac', label: 'constrains' },
+  { from: 'marketing-budget', to: 'marketing-ops', label: 'resources' },
+  { from: 'sales-enablement', to: 'pipeline-accel', label: 'accelerates' },
+  { from: 'sales-enablement', to: 'grow-nrr', label: 'onboards' },
+  { from: 'pipeline-accel', to: 'marketing-metrics', label: 'reports to' },
+  { from: 'pipeline-accel', to: 'grow-nrr', label: 'converts to' },
+  { from: 'reduce-cac', to: 'marketing-budget', label: 'optimizes' },
+  { from: 'reduce-cac', to: 'marketing-metrics', label: 'tracks via' },
+  { from: 'grow-nrr', to: 'marketing-metrics', label: 'measures via' },
+  { from: 'marketing-metrics', to: 'gtm-strategy', label: 'refines' },
+  { from: 'marketing-ops', to: 'pipeline-accel', label: 'enables' },
+  { from: 'marketing-ops', to: 'marketing-metrics', label: 'instruments' },
+  { from: 'launch-playbook', to: 'content-engine', label: 'triggers' },
+  { from: 'launch-playbook', to: 'sales-enablement', label: 'enables' },
+  { from: 'launch-playbook', to: 'marketing-ops', label: 'coordinates via' },
+];
+
+const state = {
+  nodes: NODES.map(n => ({
+    ...n,
+    x: 0, y: 0,
+    vx: 0, vy: 0,
+    knowledge: 'fuzzy',
+    visible: true,
+    radius: 0,
+  })),
+  edges: EDGES.map(e => ({ ...e })),
+  activeCategories: new Set(Object.keys(CATEGORIES)),
+  hoveredNode: null,
+  dragNode: null,
+  dragOffX: 0, dragOffY: 0,
+  panX: 0, panY: 0,
+  zoom: 1,
+  isPanning: false,
+  panStartX: 0, panStartY: 0,
+  panStartPanX: 0, panStartPanY: 0,
+  highlightedNode: null,
+};
+
+const canvasEl = document.getElementById('canvas');
+const ctx = canvasEl.getContext('2d');
+const tooltip = document.getElementById('tooltip');
+const dpr = window.devicePixelRatio || 1;
+
+function getCanvasSize() {
+  const wrap = document.getElementById('canvas-wrap');
+  return { w: wrap.clientWidth, h: wrap.clientHeight };
+}
+
+function resize() {
+  const { w, h } = getCanvasSize();
+  canvasEl.width = w * dpr;
+  canvasEl.height = h * dpr;
+}
+
+function initPositions() {
+  const { w, h } = getCanvasSize();
+  const cx = w / 2, cy = h / 2;
+  state.nodes.forEach((n, i) => {
+    const angle = (i / state.nodes.length) * Math.PI * 2;
+    const r = Math.min(w, h) * 0.32;
+    n.x = cx + Math.cos(angle) * r + (Math.random() - 0.5) * 60;
+    n.y = cy + Math.sin(angle) * r + (Math.random() - 0.5) * 60;
+  });
+}
+
+function forceLayout(iterations = 200) {
+  const { w, h } = getCanvasSize();
+  const visibleNodes = state.nodes.filter(n => n.visible);
+  const nodeMap = {};
+  visibleNodes.forEach(n => nodeMap[n.id] = n);
+
+  for (let iter = 0; iter < iterations; iter++) {
+    const alpha = 1 - iter / iterations;
+    const repulsion = 8000 * alpha;
+    const attraction = 0.004 * alpha;
+    const center = 0.01 * alpha;
+
+    for (let i = 0; i < visibleNodes.length; i++) {
+      for (let j = i + 1; j < visibleNodes.length; j++) {
+        const a = visibleNodes[i], b = visibleNodes[j];
+        let dx = b.x - a.x, dy = b.y - a.y;
+        let dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        let force = repulsion / (dist * dist);
+        let fx = (dx / dist) * force, fy = (dy / dist) * force;
+        a.vx -= fx; a.vy -= fy;
+        b.vx += fx; b.vy += fy;
+      }
+    }
+
+    state.edges.forEach(e => {
+      const a = nodeMap[e.from], b = nodeMap[e.to];
+      if (!a || !b) return;
+      let dx = b.x - a.x, dy = b.y - a.y;
+      let dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      let force = dist * attraction;
+      let fx = (dx / dist) * force, fy = (dy / dist) * force;
+      a.vx += fx; a.vy += fy;
+      b.vx -= fx; b.vy -= fy;
+    });
+
+    visibleNodes.forEach(n => {
+      n.vx += (w / 2 - n.x) * center;
+      n.vy += (h / 2 - n.y) * center;
+      n.vx *= 0.85; n.vy *= 0.85;
+      n.x += n.vx; n.y += n.vy;
+      n.x = Math.max(60, Math.min(w - 60, n.x));
+      n.y = Math.max(60, Math.min(h - 60, n.y));
+    });
+  }
+}
+
+function autoLayout() {
+  initPositions();
+  forceLayout(300);
+  draw();
+}
+
+function getNodeRadius(n) {
+  const conns = state.edges.filter(e => e.from === n.id || e.to === n.id).length;
+  return 6 + conns * 1.2;
+}
+
+function draw() {
+  const { w, h } = getCanvasSize();
+
+  // Full clear in device pixels
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+
+  // Set up DPR + pan + zoom
+  ctx.setTransform(
+    dpr * state.zoom, 0,
+    0, dpr * state.zoom,
+    dpr * state.panX,
+    dpr * state.panY
+  );
+
+  const nodeMap = {};
+  state.nodes.forEach(n => nodeMap[n.id] = n);
+
+  // Edges
+  state.edges.forEach(e => {
+    const a = nodeMap[e.from], b = nodeMap[e.to];
+    if (!a || !b || !a.visible || !b.visible) return;
+
+    const isHovered = state.hoveredNode && (state.hoveredNode.id === e.from || state.hoveredNode.id === e.to);
+    const isHighlighted = state.highlightedNode && (state.highlightedNode === e.from || state.highlightedNode === e.to);
+    const active = isHovered || isHighlighted;
+
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.strokeStyle = active ? CATEGORIES[a.cat] + '99' : '#4a556833';
+    ctx.lineWidth = active ? 1.5 : 0.8;
+    ctx.stroke();
+
+    if (active) {
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      const bR = getNodeRadius(b);
+      const ax = b.x - (dx / dist) * (bR + 4);
+      const ay = b.y - (dy / dist) * (bR + 4);
+      const angle = Math.atan2(dy, dx);
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(ax - 6 * Math.cos(angle - 0.4), ay - 6 * Math.sin(angle - 0.4));
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(ax - 6 * Math.cos(angle + 0.4), ay - 6 * Math.sin(angle + 0.4));
+      ctx.stroke();
+
+      ctx.font = '9px -apple-system, sans-serif';
+      ctx.fillStyle = '#7c8db5';
+      ctx.textAlign = 'center';
+      ctx.fillText(e.label, (a.x + b.x) / 2, (a.y + b.y) / 2 - 4);
+    }
+  });
+
+  // Nodes
+  state.nodes.forEach(n => {
+    if (!n.visible) return;
+    const r = getNodeRadius(n);
+    n.radius = r;
+    const color = CATEGORIES[n.cat];
+    const isHovered = state.hoveredNode === n;
+    const isHighlighted = state.highlightedNode === n.id;
+    const active = isHovered || isHighlighted;
+
+    if (active) {
+      const grad = ctx.createRadialGradient(n.x, n.y, r, n.x, n.y, r * 4);
+      grad.addColorStop(0, color + '44');
+      grad.addColorStop(1, color + '00');
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r * 4, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+    }
+
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = active ? color : color + '99';
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = active ? 2 : 0.5;
+    ctx.stroke();
+
+    const fs = active ? 12 : 10;
+    ctx.font = `${active ? '600' : '400'} ${fs}px -apple-system, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = active ? '#f0f0f0' : '#a0aec0';
+    ctx.fillText(n.label, n.x, n.y + r + fs + 2);
+
+    const kColors = { know: '#34d399', fuzzy: '#fbbf24', unknown: '#f87171' };
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, r + 3, 0, Math.PI * 2);
+    ctx.strokeStyle = kColors[n.knowledge] + '66';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
+}
+
+// Hit test — convert screen coords to world coords
+function nodeAt(screenX, screenY) {
+  const x = (screenX - state.panX) / state.zoom;
+  const y = (screenY - state.panY) / state.zoom;
+  for (let i = state.nodes.length - 1; i >= 0; i--) {
+    const n = state.nodes[i];
+    if (!n.visible) continue;
+    const r = getNodeRadius(n) + 5;
+    if ((x - n.x) ** 2 + (y - n.y) ** 2 < r * r) return n;
+  }
+  return null;
+}
+
+function canvasXY(e) {
+  const rect = canvasEl.getBoundingClientRect();
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+
+canvasEl.addEventListener('mousedown', e => {
+  const { x, y } = canvasXY(e);
+  const node = nodeAt(x, y);
+  if (node) {
+    state.dragNode = node;
+    const wx = (x - state.panX) / state.zoom;
+    const wy = (y - state.panY) / state.zoom;
+    state.dragOffX = wx - node.x;
+    state.dragOffY = wy - node.y;
+  } else {
+    state.isPanning = true;
+    state.panStartX = x;
+    state.panStartY = y;
+    state.panStartPanX = state.panX;
+    state.panStartPanY = state.panY;
+  }
+});
+
+canvasEl.addEventListener('mousemove', e => {
+  const { x, y } = canvasXY(e);
+
+  if (state.dragNode) {
+    state.dragNode.x = (x - state.panX) / state.zoom - state.dragOffX;
+    state.dragNode.y = (y - state.panY) / state.zoom - state.dragOffY;
+    draw();
+    return;
+  }
+
+  if (state.isPanning) {
+    state.panX = state.panStartPanX + (x - state.panStartX);
+    state.panY = state.panStartPanY + (y - state.panStartY);
+    draw();
+    return;
+  }
+
+  const node = nodeAt(x, y);
+  if (node !== state.hoveredNode) {
+    state.hoveredNode = node;
+    draw();
+    if (node) {
+      const conns = state.edges
+        .filter(ed => ed.from === node.id || ed.to === node.id)
+        .map(ed => {
+          const other = ed.from === node.id ? ed.to : ed.from;
+          const otherNode = state.nodes.find(n => n.id === other);
+          const dir = ed.from === node.id ? '\u2192' : '\u2190';
+          return `${dir} ${ed.label} ${otherNode.label}`;
+        });
+      tooltip.innerHTML = `
+        <div class="tt-title">${node.label}</div>
+        <div class="tt-cat">${node.cat}</div>
+        <div class="tt-desc">${node.desc}</div>
+        <div class="tt-connections">${conns.join('<br>')}</div>
+      `;
+      tooltip.style.display = 'block';
+      tooltip.style.left = Math.min(e.clientX + 14, window.innerWidth - 300) + 'px';
+      tooltip.style.top = Math.min(e.clientY + 14, window.innerHeight - 200) + 'px';
+    } else {
+      tooltip.style.display = 'none';
+    }
+  } else if (node) {
+    tooltip.style.left = Math.min(e.clientX + 14, window.innerWidth - 300) + 'px';
+    tooltip.style.top = Math.min(e.clientY + 14, window.innerHeight - 200) + 'px';
+  }
+});
+
+canvasEl.addEventListener('mouseup', () => {
+  state.dragNode = null;
+  state.isPanning = false;
+});
+
+canvasEl.addEventListener('mouseleave', () => {
+  state.hoveredNode = null;
+  state.dragNode = null;
+  state.isPanning = false;
+  tooltip.style.display = 'none';
+  draw();
+});
+
+canvasEl.addEventListener('wheel', e => {
+  e.preventDefault();
+  const { x, y } = canvasXY(e);
+  const oldZoom = state.zoom;
+  const delta = e.deltaY > 0 ? 0.92 : 1.08;
+  state.zoom = Math.max(0.3, Math.min(3, state.zoom * delta));
+  state.panX = x - (x - state.panX) * (state.zoom / oldZoom);
+  state.panY = y - (y - state.panY) * (state.zoom / oldZoom);
+  draw();
+}, { passive: false });
+
+// Sidebar
+function renderCategoryFilters() {
+  const el = document.getElementById('category-filters');
+  el.innerHTML = '';
+  Object.entries(CATEGORIES).forEach(([cat, color]) => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn' + (state.activeCategories.has(cat) ? ' active' : '');
+    btn.textContent = cat;
+    btn.style.borderColor = state.activeCategories.has(cat) ? color : '';
+    btn.style.color = state.activeCategories.has(cat) ? color : '';
+    btn.onclick = () => {
+      if (state.activeCategories.has(cat)) state.activeCategories.delete(cat);
+      else state.activeCategories.add(cat);
+      updateVisibility();
+    };
+    el.appendChild(btn);
+  });
+}
+
+function updateVisibility() {
+  state.nodes.forEach(n => { n.visible = state.activeCategories.has(n.cat); });
+  renderCategoryFilters();
+  renderNodeList();
+  draw();
+}
+
+function renderNodeList() {
+  const el = document.getElementById('node-list');
+  const q = document.getElementById('search-input').value.toLowerCase();
+  el.innerHTML = '';
+  state.nodes
+    .filter(n => n.visible && n.label.toLowerCase().includes(q))
+    .forEach(n => {
+      const div = document.createElement('div');
+      div.className = 'node-item';
+      div.innerHTML = `
+        <div class="node-dot" style="background:${CATEGORIES[n.cat]}"></div>
+        <span class="node-label">${n.label}</span>
+        <button class="knowledge-badge ${n.knowledge}">${n.knowledge}</button>
+      `;
+      div.querySelector('.node-label').onclick = () => {
+        state.highlightedNode = state.highlightedNode === n.id ? null : n.id;
+        renderNodeList();
+        draw();
+      };
+      div.querySelector('.knowledge-badge').onclick = () => {
+        const cycle = { know: 'fuzzy', fuzzy: 'unknown', unknown: 'know' };
+        n.knowledge = cycle[n.knowledge];
+        renderNodeList();
+        draw();
+      };
+      el.appendChild(div);
+    });
+}
+
+function preset(name) {
+  if (name === 'all') {
+    state.activeCategories = new Set(Object.keys(CATEGORIES));
+  } else if (name === 'foundation') {
+    state.activeCategories = new Set(['Foundation', 'Strategy']);
+  } else if (name === 'growth') {
+    state.activeCategories = new Set(['Content & Brand', 'Strategy', 'Pipeline & Sales']);
+  } else if (name === 'revenue') {
+    state.activeCategories = new Set(['Pipeline & Sales', 'Analytics', 'Operations']);
+  }
+  updateVisibility();
+}
+
+function resetKnowledge() {
+  state.nodes.forEach(n => n.knowledge = 'fuzzy');
+  renderNodeList();
+  draw();
+}
+
+// Handle window resize — re-measure canvas and redraw
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    resize();
+    draw();
+  }, 50);
+});
+
+// Init
+resize();
+initPositions();
+forceLayout(300);
+renderCategoryFilters();
+renderNodeList();
+draw();
+</script>
+</body>
+</html>

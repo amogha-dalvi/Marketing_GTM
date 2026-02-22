@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>90-Day GTM Sprint Planner</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f1117;
+    color: #e0e0e0;
+    height: 100%;
+    overflow: hidden;
+  }
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 20px;
+    background: #161822;
+    border-bottom: 1px solid #2a2d3a;
+    flex-shrink: 0;
+  }
+  header h1 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f0f0f0;
+    white-space: nowrap;
+  }
+  .stage-tabs {
+    display: flex;
+    gap: 6px;
+    margin-left: 16px;
+  }
+  .stage-tab {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid #2a2d3a;
+    background: transparent;
+    color: #999;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .stage-tab:hover { border-color: #555; color: #ccc; }
+  .stage-tab.active { background: #2563eb; border-color: #2563eb; color: #fff; font-weight: 500; }
+
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .toggle-label {
+    font-size: 12px;
+    color: #888;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .toggle-label input { accent-color: #2563eb; }
+
+  /* Main layout */
+  .main {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Gantt area */
+  .gantt-container {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+  }
+
+  /* Week header */
+  .week-header {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #161822;
+    border-bottom: 1px solid #2a2d3a;
+    flex-shrink: 0;
+  }
+  .row-label-spacer {
+    width: 220px;
+    min-width: 220px;
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 11px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-right: 1px solid #2a2d3a;
+  }
+  .week-cols {
+    display: flex;
+    flex: 1;
+  }
+  .week-col-header {
+    flex: 1;
+    min-width: 52px;
+    text-align: center;
+    padding: 6px 2px;
+    font-size: 11px;
+    color: #777;
+    border-right: 1px solid #1e2030;
+  }
+  .week-col-header .wk { font-weight: 600; color: #aaa; }
+  .week-col-header .month { font-size: 10px; color: #555; margin-top: 1px; }
+
+  /* Phase separators */
+  .phase-row {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    background: #1a1c2a;
+    border-bottom: 1px solid #2a2d3a;
+    border-top: 1px solid #2a2d3a;
+    position: sticky;
+    left: 0;
+    flex-shrink: 0;
+  }
+  .phase-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .phase-name {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  .phase-weeks {
+    font-size: 10px;
+    color: #666;
+    margin-left: 8px;
+  }
+
+  /* Skill rows */
+  .skill-row {
+    display: flex;
+    align-items: center;
+    min-height: 38px;
+    border-bottom: 1px solid #1a1c28;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .skill-row:hover { background: #1a1c2a; }
+  .skill-row.selected { background: #1c2040; }
+  .skill-label {
+    width: 220px;
+    min-width: 220px;
+    flex-shrink: 0;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-right: 1px solid #1e2030;
+  }
+  .skill-num {
+    font-size: 10px;
+    color: #555;
+    width: 18px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .skill-name {
+    font-size: 12px;
+    color: #ccc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .skill-effort {
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: #2a2d3a;
+    color: #888;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .skill-timeline {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    position: relative;
+    height: 38px;
+  }
+  .week-cell {
+    flex: 1;
+    min-width: 52px;
+    height: 100%;
+    border-right: 1px solid #16182210;
+    position: relative;
+  }
+
+  /* Gantt bar */
+  .gantt-bar {
+    position: absolute;
+    height: 22px;
+    top: 8px;
+    border-radius: 4px;
+    opacity: 0.9;
+    transition: all 0.3s ease;
+    z-index: 2;
+  }
+  .gantt-bar.dimmed { opacity: 0.2; }
+  .skill-row.excluded .skill-name { color: #555; text-decoration: line-through; }
+  .skill-row.excluded .gantt-bar { opacity: 0.08; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 320px;
+    min-width: 320px;
+    flex-shrink: 0;
+    background: #161822;
+    border-left: 1px solid #2a2d3a;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .sidebar-section {
+    padding: 14px 16px;
+    border-bottom: 1px solid #2a2d3a;
+  }
+  .sidebar-section h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #666;
+    margin-bottom: 10px;
+  }
+
+  /* Detail panel */
+  .detail-panel {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+  }
+  .detail-panel h2 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #f0f0f0;
+    margin-bottom: 4px;
+  }
+  .detail-phase {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+  .detail-desc {
+    font-size: 13px;
+    color: #aaa;
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .detail-meta {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 6px;
+  }
+  .detail-meta strong { color: #bbb; }
+  .dep-tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: #1e2030;
+    color: #888;
+    margin: 2px 2px 2px 0;
+  }
+  .deliverable-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 6px;
+  }
+  .deliverable-list li {
+    font-size: 12px;
+    color: #aaa;
+    padding: 3px 0;
+    padding-left: 14px;
+    position: relative;
+  }
+  .deliverable-list li::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #555;
+    position: absolute;
+    left: 0; top: 8px;
+  }
+
+  /* Summary stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .stat-card {
+    background: #1e2030;
+    border-radius: 6px;
+    padding: 10px;
+  }
+  .stat-val {
+    font-size: 20px;
+    font-weight: 700;
+    color: #f0f0f0;
+  }
+  .stat-label {
+    font-size: 10px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-top: 2px;
+  }
+
+  /* Milestone list */
+  .milestone-list {
+    list-style: none;
+    padding: 0;
+  }
+  .milestone-list li {
+    font-size: 12px;
+    color: #aaa;
+    padding: 5px 0;
+    border-bottom: 1px solid #1e2030;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .milestone-wk {
+    font-size: 10px;
+    font-weight: 600;
+    color: #2563eb;
+    min-width: 36px;
+  }
+
+  /* Prompt area */
+  .prompt-area {
+    border-top: 1px solid #2a2d3a;
+    background: #111320;
+    padding: 12px 20px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    max-height: 140px;
+  }
+  .prompt-text {
+    flex: 1;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    color: #999;
+    line-height: 1.5;
+    overflow-y: auto;
+    max-height: 110px;
+    white-space: pre-wrap;
+  }
+  .copy-btn {
+    padding: 6px 14px;
+    border-radius: 5px;
+    border: 1px solid #2a2d3a;
+    background: #1e2030;
+    color: #aaa;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .copy-btn:hover { background: #2563eb; color: #fff; border-color: #2563eb; }
+
+  .empty-detail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #444;
+    font-size: 13px;
+    text-align: center;
+    padding: 20px;
+    gap: 8px;
+  }
+  .empty-detail .hint { font-size: 11px; color: #333; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>90-Day GTM Sprint Planner</h1>
+    <div class="stage-tabs">
+      <button class="stage-tab active" data-stage="pre-pmf">Pre-PMF</button>
+      <button class="stage-tab" data-stage="scaling">Scaling</button>
+      <button class="stage-tab" data-stage="new-vertical">New Vertical</button>
+    </div>
+    <div class="header-right">
+      <label class="toggle-label">
+        <input type="checkbox" id="toggle-healthcare" />
+        Include Healthcare Vertical
+      </label>
+    </div>
+  </header>
+
+  <div class="main">
+    <div class="gantt-container" id="gantt-container"></div>
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <h3>Sprint Summary</h3>
+        <div class="stats-grid" id="stats-grid"></div>
+      </div>
+      <div class="sidebar-section">
+        <h3>Key Milestones</h3>
+        <ul class="milestone-list" id="milestone-list"></ul>
+      </div>
+      <div class="detail-panel" id="detail-panel">
+        <div class="empty-detail">
+          <div>Click a skill row to see details</div>
+          <div class="hint">Deliverables, dependencies, and effort</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="prompt-area">
+    <div class="prompt-text" id="prompt-text"></div>
+    <button class="copy-btn" id="copy-btn">Copy</button>
+  </div>
+</div>
+
+<script>
+const PHASES = [
+  { id: 'foundation', name: 'Foundation', color: '#3b82f6', bg: '#1e3a5f' },
+  { id: 'strategy',   name: 'Strategy',   color: '#8b5cf6', bg: '#2d1f5e' },
+  { id: 'infrastructure', name: 'Infrastructure', color: '#f59e0b', bg: '#4a3510' },
+  { id: 'execution',  name: 'Execution',  color: '#10b981', bg: '#0f3d2e' },
+  { id: 'optimization', name: 'Optimization', color: '#ef4444', bg: '#4a1515' },
+];
+
+const SKILLS = [
+  {
+    id: 1, key: 'customer-research', name: 'Customer Research',
+    desc: 'Structured discovery interviews, survey design, and synthesis. Foundation for all downstream marketing decisions.',
+    deliverables: ['Interview scripts & synthesis report', 'Voice-of-customer database', 'Jobs-to-be-done framework', 'Churn pattern analysis'],
+    deps: [],
+    effort: 'High',
+    phase: 'foundation'
+  },
+  {
+    id: 2, key: 'icp-segmentation', name: 'ICP & Segmentation',
+    desc: 'Define ideal customer profile with firmographic, technographic, and behavioral criteria. Score and tier segments by fit and value.',
+    deliverables: ['ICP definition document', 'Segment scoring model', 'Disqualification criteria', 'TAM/SAM/SOM sizing'],
+    deps: [1],
+    effort: 'High',
+    phase: 'foundation'
+  },
+  {
+    id: 3, key: 'positioning-messaging', name: 'Positioning & Messaging',
+    desc: 'Build positioning statement, value prop hierarchy, and messaging matrix per persona. Source of truth for all content.',
+    deliverables: ['Positioning statement', 'Messaging matrix by persona', 'Value prop hierarchy', 'Proof point library'],
+    deps: [2],
+    effort: 'High',
+    phase: 'foundation'
+  },
+  {
+    id: 4, key: 'competitive-intel', name: 'Competitive Intel',
+    desc: 'Map competitive landscape, build battlecards, and establish win/loss tracking. Feeds enablement and positioning.',
+    deliverables: ['Competitive landscape map', 'Battlecards per competitor', 'Win/loss analysis framework', 'Feature comparison matrix'],
+    deps: [1, 2],
+    effort: 'Medium',
+    phase: 'strategy'
+  },
+  {
+    id: 5, key: 'gtm-strategy', name: 'GTM Strategy',
+    desc: 'Select GTM motion (product-led, sales-led, hybrid), prioritize channels, and create 90-day execution plan tied to revenue targets.',
+    deliverables: ['GTM motion selection', 'Channel priority stack rank', '90-day execution roadmap', 'KPI targets by phase'],
+    deps: [2, 3],
+    effort: 'High',
+    phase: 'strategy'
+  },
+  {
+    id: 6, key: 'marketing-budget', name: 'Marketing Budget',
+    desc: 'Derive budget from revenue targets using SaaS benchmarks. Allocate across channels with expected ROI and payback periods.',
+    deliverables: ['Budget model (rev-derived)', 'Channel allocation plan', 'ROI projections by channel', 'Build vs buy vs automate map'],
+    deps: [5],
+    effort: 'Medium',
+    phase: 'strategy'
+  },
+  {
+    id: 7, key: 'marketing-ops', name: 'Marketing Ops',
+    desc: 'CRM configuration, lead routing, tool integrations, and process documentation. The plumbing that makes everything else work.',
+    deliverables: ['CRM setup & hygiene', 'Lead routing rules', 'Tool integration map', 'SOP documentation'],
+    deps: [],
+    effort: 'High',
+    phase: 'infrastructure'
+  },
+  {
+    id: 8, key: 'marketing-metrics', name: 'Marketing Metrics',
+    desc: 'Build measurement hierarchy from activity metrics to business outcomes. Attribution model, dashboards, and reporting cadence.',
+    deliverables: ['Metrics hierarchy', 'Attribution model', 'Dashboard setup', 'Reporting cadence & templates'],
+    deps: [7],
+    effort: 'Medium',
+    phase: 'infrastructure'
+  },
+  {
+    id: 9, key: 'content-engine', name: 'Content Engine',
+    desc: 'Systematic content production workflow. Editorial calendar, distribution plan, repurposing system, and measurement.',
+    deliverables: ['Editorial calendar (12-week)', 'Content templates by type', 'Distribution playbook', 'Repurposing workflow'],
+    deps: [3, 5],
+    effort: 'High',
+    phase: 'execution'
+  },
+  {
+    id: 10, key: 'sales-enablement', name: 'Sales Enablement',
+    desc: 'Deal-stage-specific content, buying group maps, objection handling, and rep training materials.',
+    deliverables: ['Buying group content map', 'Deal-stage content library', 'Objection handling guide', 'Sales pitch deck'],
+    deps: [3, 4],
+    effort: 'High',
+    phase: 'execution'
+  },
+  {
+    id: 11, key: 'launch-playbook', name: 'Launch Playbook',
+    desc: 'Cross-functional launch execution: tier classification, asset creation, internal enablement, and launch-day coordination.',
+    deliverables: ['Launch tier classification', 'Asset checklist by tier', 'Internal enablement brief', 'Launch-day run-of-show'],
+    deps: [5, 9, 10],
+    effort: 'High',
+    phase: 'execution'
+  },
+  {
+    id: 12, key: 'pipeline-acceleration', name: 'Pipeline Acceleration',
+    desc: 'Improve pipeline velocity, win rates, and deal progression. Signal-based engagement replaces linear nurture drips.',
+    deliverables: ['Pipeline velocity baseline', 'Signal-based engagement rules', 'Lead scoring model', 'Deal acceleration playbook'],
+    deps: [7, 8, 9],
+    effort: 'Medium',
+    phase: 'execution'
+  },
+  {
+    id: 13, key: 'reducing-cac', name: 'Reducing CAC',
+    desc: 'Channel-level CAC analysis, LTV:CAC optimization, and spend reallocation toward highest-efficiency channels.',
+    deliverables: ['Channel-level CAC report', 'LTV:CAC by segment', 'Spend reallocation plan', 'Organic channel investment case'],
+    deps: [8, 6],
+    effort: 'Medium',
+    phase: 'optimization'
+  },
+  {
+    id: 14, key: 'growing-nrr', name: 'Growing NRR',
+    desc: 'Predictive churn prevention, expansion triggers, and onboarding optimization to drive net revenue retention above 110%.',
+    deliverables: ['Health score model', 'Churn prediction signals', 'Expansion trigger playbook', 'Onboarding activation milestones'],
+    deps: [1, 10],
+    effort: 'High',
+    phase: 'optimization'
+  },
+  {
+    id: 15, key: 'geo-visibility', name: 'AI Search Visibility',
+    desc: 'Optimize presence in AI search engines (ChatGPT, Perplexity, Gemini). Monitor citations and correct inaccurate descriptions.',
+    deliverables: ['AI citation audit', 'Structured data optimization', 'AI-optimized content plan', 'Monitoring dashboard'],
+    deps: [3, 9],
+    effort: 'Low',
+    phase: 'optimization'
+  },
+  {
+    id: 16, key: 'brand-strategy', name: 'Brand Strategy',
+    desc: 'Strategic brand narrative, thought leadership positioning, voice guidelines, and community/earned media presence plan.',
+    deliverables: ['Brand narrative document', 'Voice & tone guidelines', 'Thought leadership calendar', 'Community strategy'],
+    deps: [3],
+    effort: 'Medium',
+    phase: 'optimization'
+  },
+  {
+    id: 17, key: 'healthcare-vertical', name: 'Healthcare Vertical',
+    desc: 'Adapt entire marketing system for healthtech B2B2C: healthcare buyers, compliance (HIPAA/HITRUST), clinical evidence, and patient adoption.',
+    deliverables: ['Healthcare ICP adaptation', 'Compliance requirements map', 'Clinical evidence strategy', 'Buying group map (health systems)'],
+    deps: [1, 2, 3, 4, 5],
+    effort: 'High',
+    phase: 'execution',
+    optional: true
+  }
+];
+
+// Stage-specific schedules: [startWeek, endWeek] (1-indexed)
+const SCHEDULES = {
+  'pre-pmf': {
+    1:  [1, 3],   // customer research
+    2:  [2, 4],   // icp
+    3:  [4, 6],   // positioning
+    4:  [4, 6],   // competitive
+    5:  [6, 8],   // gtm strategy
+    6:  [7, 8],   // budget
+    7:  [3, 6],   // ops
+    8:  [6, 8],   // metrics
+    9:  [7, 10],  // content
+    10: [7, 9],   // enablement
+    11: [10, 12], // launch
+    12: [9, 11],  // pipeline
+    13: [10, 12], // cac
+    14: [10, 12], // nrr
+    15: [9, 11],  // ai visibility
+    16: [8, 10],  // brand
+    17: [9, 12],  // healthcare
+  },
+  'scaling': {
+    1:  [1, 2],   // customer research (refresh)
+    2:  [1, 2],   // icp (refine)
+    3:  [2, 3],   // positioning (refresh)
+    4:  [2, 4],   // competitive
+    5:  [3, 4],   // gtm (iterate)
+    6:  [3, 4],   // budget (realloc)
+    7:  [1, 4],   // ops (heavy focus)
+    8:  [3, 5],   // metrics
+    9:  [4, 8],   // content (heavy)
+    10: [4, 7],   // enablement
+    11: [7, 9],   // launch
+    12: [5, 9],   // pipeline (heavy)
+    13: [6, 10],  // cac (heavy)
+    14: [7, 11],  // nrr (heavy)
+    15: [8, 11],  // ai visibility
+    16: [9, 12],  // brand
+    17: [8, 12],  // healthcare
+  },
+  'new-vertical': {
+    1:  [1, 4],   // customer research (deep, new market)
+    2:  [3, 5],   // icp (new segments)
+    3:  [5, 7],   // positioning (adapt)
+    4:  [3, 6],   // competitive (new landscape)
+    5:  [6, 8],   // gtm (vertical-specific)
+    6:  [7, 9],   // budget
+    7:  [2, 5],   // ops
+    8:  [5, 7],   // metrics
+    9:  [7, 10],  // content (vertical)
+    10: [7, 10],  // enablement (vertical)
+    11: [10, 12], // launch (vertical)
+    12: [9, 12],  // pipeline
+    13: [10, 12], // cac
+    14: [9, 12],  // nrr
+    15: [8, 10],  // ai visibility
+    16: [6, 8],   // brand
+    17: [7, 12],  // healthcare
+  }
+};
+
+const MILESTONES = {
+  'pre-pmf': [
+    { week: 3, text: 'Customer research synthesis complete' },
+    { week: 4, text: 'ICP v1 defined and scored' },
+    { week: 6, text: 'Positioning locked, messaging matrix done' },
+    { week: 8, text: 'GTM strategy approved, budget allocated' },
+    { week: 10, text: 'Content engine producing, enablement shipped' },
+    { week: 12, text: 'First launch executed, optimization begins' },
+  ],
+  'scaling': [
+    { week: 2, text: 'ICP refresh and research synthesis' },
+    { week: 4, text: 'Ops infrastructure hardened, metrics live' },
+    { week: 6, text: 'Content engine at cadence, pipeline scoring active' },
+    { week: 9, text: 'CAC optimization in progress, launch executed' },
+    { week: 11, text: 'NRR playbook active, AI visibility monitored' },
+    { week: 12, text: 'Full system operational, brand strategy in place' },
+  ],
+  'new-vertical': [
+    { week: 4, text: 'New-market research synthesis complete' },
+    { week: 5, text: 'Vertical ICP defined, ops adapted' },
+    { week: 7, text: 'Positioning adapted, competitive landscape mapped' },
+    { week: 8, text: 'Vertical GTM approved, budget set' },
+    { week: 10, text: 'Vertical content & enablement shipping' },
+    { week: 12, text: 'Vertical launch executed, optimization cycle starts' },
+  ]
+};
+
+const STAGE_LABELS = {
+  'pre-pmf': 'Pre-Product-Market Fit',
+  'scaling': 'Scaling',
+  'new-vertical': 'Entering New Vertical'
+};
+
+// State
+const state = {
+  stage: 'pre-pmf',
+  selectedSkill: null,
+  includeHealthcare: false
+};
+
+// Month labels for week headers
+function monthForWeek(w) {
+  const months = ['Month 1', 'Month 1', 'Month 1', 'Month 1',
+                  'Month 2', 'Month 2', 'Month 2', 'Month 2',
+                  'Month 3', 'Month 3', 'Month 3', 'Month 3'];
+  return months[w - 1] || '';
+}
+
+function getPhase(phaseId) {
+  return PHASES.find(p => p.id === phaseId);
+}
+
+function getSkillSchedule(skillId) {
+  return SCHEDULES[state.stage][skillId];
+}
+
+function getActiveSkills() {
+  return SKILLS.filter(s => {
+    if (s.id === 17 && !state.includeHealthcare) return false;
+    return true;
+  });
+}
+
+function getPhaseWeekRange(phaseId) {
+  const skills = getActiveSkills().filter(s => s.phase === phaseId);
+  if (!skills.length) return null;
+  let minW = 13, maxW = 0;
+  skills.forEach(s => {
+    const sched = getSkillSchedule(s.id);
+    if (sched) {
+      minW = Math.min(minW, sched[0]);
+      maxW = Math.max(maxW, sched[1]);
+    }
+  });
+  return minW <= maxW ? [minW, maxW] : null;
+}
+
+// Render
+function render() {
+  renderGantt();
+  renderStats();
+  renderMilestones();
+  renderDetail();
+  updatePrompt();
+}
+
+function renderGantt() {
+  const container = document.getElementById('gantt-container');
+  let html = '';
+
+  // Week header
+  html += '<div class="week-header"><div class="row-label-spacer">Skill</div><div class="week-cols">';
+  for (let w = 1; w <= 12; w++) {
+    html += `<div class="week-col-header"><div class="wk">W${w}</div><div class="month">${monthForWeek(w)}</div></div>`;
+  }
+  html += '</div></div>';
+
+  // Group by phase
+  const phaseOrder = ['foundation', 'strategy', 'infrastructure', 'execution', 'optimization'];
+  phaseOrder.forEach(phaseId => {
+    const phase = getPhase(phaseId);
+    const skills = getActiveSkills().filter(s => s.phase === phaseId);
+    if (!skills.length) return;
+
+    const range = getPhaseWeekRange(phaseId);
+    const rangeStr = range ? `Weeks ${range[0]}-${range[1]}` : '';
+
+    html += `<div class="phase-row">
+      <div class="phase-dot" style="background:${phase.color}"></div>
+      <div class="phase-name" style="color:${phase.color}">${phase.name}</div>
+      <div class="phase-weeks">${rangeStr}</div>
+    </div>`;
+
+    skills.forEach(skill => {
+      const sched = getSkillSchedule(skill.id);
+      const isSelected = state.selectedSkill === skill.id;
+      const excluded = !sched;
+
+      html += `<div class="skill-row ${isSelected ? 'selected' : ''} ${excluded ? 'excluded' : ''}" data-skill="${skill.id}">`;
+      html += `<div class="skill-label">
+        <span class="skill-num">${skill.id}</span>
+        <span class="skill-name" title="${skill.name}">${skill.name}</span>
+        <span class="skill-effort">${skill.effort}</span>
+      </div>`;
+      html += '<div class="skill-timeline">';
+
+      // Render week cells (just empty spacers for the grid lines)
+      for (let w = 1; w <= 12; w++) {
+        html += `<div class="week-cell"></div>`;
+      }
+
+      // Render gantt bar
+      if (sched) {
+        const startPct = ((sched[0] - 1) / 12) * 100;
+        const widthPct = ((sched[1] - sched[0] + 1) / 12) * 100;
+        html += `<div class="gantt-bar" style="left:${startPct}%;width:${widthPct}%;background:${phase.color}"></div>`;
+      }
+
+      html += '</div></div>';
+    });
+  });
+
+  container.innerHTML = html;
+
+  // Attach click listeners
+  container.querySelectorAll('.skill-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const id = parseInt(row.dataset.skill);
+      state.selectedSkill = state.selectedSkill === id ? null : id;
+      render();
+    });
+  });
+}
+
+function renderStats() {
+  const active = getActiveSkills();
+  const totalSkills = active.length;
+
+  const effortMap = { High: 3, Medium: 2, Low: 1 };
+  const totalEffort = active.reduce((sum, s) => sum + (effortMap[s.effort] || 0), 0);
+
+  const phases = {};
+  active.forEach(s => {
+    if (!phases[s.phase]) phases[s.phase] = 0;
+    phases[s.phase]++;
+  });
+
+  // Find peak week (most overlapping skills)
+  let peakWeek = 1, peakCount = 0;
+  for (let w = 1; w <= 12; w++) {
+    let count = 0;
+    active.forEach(s => {
+      const sched = getSkillSchedule(s.id);
+      if (sched && w >= sched[0] && w <= sched[1]) count++;
+    });
+    if (count > peakCount) { peakCount = count; peakWeek = w; }
+  }
+
+  const grid = document.getElementById('stats-grid');
+  grid.innerHTML = `
+    <div class="stat-card"><div class="stat-val">${totalSkills}</div><div class="stat-label">Active Skills</div></div>
+    <div class="stat-card"><div class="stat-val">${peakCount}</div><div class="stat-label">Peak Parallel (W${peakWeek})</div></div>
+    <div class="stat-card"><div class="stat-val">${Object.keys(phases).length}</div><div class="stat-label">Phases</div></div>
+    <div class="stat-card"><div class="stat-val">${totalEffort}pts</div><div class="stat-label">Total Effort</div></div>
+  `;
+}
+
+function renderMilestones() {
+  const list = document.getElementById('milestone-list');
+  const milestones = MILESTONES[state.stage] || [];
+  list.innerHTML = milestones.map(m =>
+    `<li><span class="milestone-wk">W${m.week}</span><span>${m.text}</span></li>`
+  ).join('');
+}
+
+function renderDetail() {
+  const panel = document.getElementById('detail-panel');
+  if (!state.selectedSkill) {
+    panel.innerHTML = `<div class="empty-detail">
+      <div>Click a skill row to see details</div>
+      <div class="hint">Deliverables, dependencies, and effort</div>
+    </div>`;
+    return;
+  }
+
+  const skill = SKILLS.find(s => s.id === state.selectedSkill);
+  if (!skill) return;
+  const phase = getPhase(skill.phase);
+  const sched = getSkillSchedule(skill.id);
+  const weekRange = sched ? `Weeks ${sched[0]}–${sched[1]}` : 'Not scheduled';
+
+  const depsHtml = skill.deps.length
+    ? skill.deps.map(d => {
+        const dep = SKILLS.find(s => s.id === d);
+        return `<span class="dep-tag">${dep ? dep.name : d}</span>`;
+      }).join(' ')
+    : '<span style="color:#555">None (can start immediately)</span>';
+
+  panel.innerHTML = `
+    <h2>${skill.name}</h2>
+    <div class="detail-phase" style="background:${phase.bg};color:${phase.color}">${phase.name} · ${weekRange}</div>
+    <div class="detail-desc">${skill.desc}</div>
+    <div class="detail-meta"><strong>Effort:</strong> ${skill.effort}</div>
+    <div class="detail-meta"><strong>Dependencies:</strong></div>
+    <div style="margin: 4px 0 12px 0">${depsHtml}</div>
+    <div class="detail-meta"><strong>Key Deliverables:</strong></div>
+    <ul class="deliverable-list">
+      ${skill.deliverables.map(d => `<li>${d}</li>`).join('')}
+    </ul>
+  `;
+}
+
+function updatePrompt() {
+  const active = getActiveSkills();
+  const stageLabel = STAGE_LABELS[state.stage];
+
+  const phaseOrder = ['foundation', 'strategy', 'infrastructure', 'execution', 'optimization'];
+  const phaseBlocks = [];
+
+  phaseOrder.forEach(phaseId => {
+    const phase = getPhase(phaseId);
+    const skills = active.filter(s => s.phase === phaseId);
+    if (!skills.length) return;
+
+    const range = getPhaseWeekRange(phaseId);
+    const lines = skills.map(s => {
+      const sched = getSkillSchedule(s.id);
+      return sched ? `  - ${s.name} (W${sched[0]}–W${sched[1]}, ${s.effort} effort)` : `  - ${s.name} (unscheduled)`;
+    });
+
+    phaseBlocks.push(`${phase.name} (Weeks ${range ? range[0] + '–' + range[1] : '?'}):\n${lines.join('\n')}`);
+  });
+
+  const milestones = (MILESTONES[state.stage] || []).map(m => `  - W${m.week}: ${m.text}`).join('\n');
+
+  const prompt = `I'm planning a 90-day GTM sprint for a SaaS company ($1M–5M ARR) at the "${stageLabel}" stage.${state.includeHealthcare ? ' This includes healthcare vertical adaptation.' : ''}
+
+Here's my planned execution sequence:
+
+${phaseBlocks.join('\n\n')}
+
+Key milestones:
+${milestones}
+
+Help me execute this plan. Start with the first phase and walk me through each skill in order — what to do, what data to gather, and what deliverables to produce. Flag any risks or dependencies I should watch for.`;
+
+  document.getElementById('prompt-text').textContent = prompt;
+}
+
+// Event listeners
+document.querySelectorAll('.stage-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.stage-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    state.stage = tab.dataset.stage;
+    state.selectedSkill = null;
+    render();
+  });
+});
+
+document.getElementById('toggle-healthcare').addEventListener('change', (e) => {
+  state.includeHealthcare = e.target.checked;
+  if (!state.includeHealthcare && state.selectedSkill === 17) state.selectedSkill = null;
+  render();
+});
+
+document.getElementById('copy-btn').addEventListener('click', () => {
+  const text = document.getElementById('prompt-text').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 1500);
+  });
+});
+
+// Initial render
+render();
+</script>
+</body>
+</html>
